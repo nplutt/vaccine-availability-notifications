@@ -29,7 +29,8 @@ def format_availability(state_abbr: str, availability: dict) -> dict:
         features = availability.pop("features")
         availability["features"] = {}
         for f in features:
-            availability["features"][f["id"]] = f
+            feature_id = f['properties']['id']
+            availability["features"][feature_id] = f
     except (KeyError, IndexError) as e:
         logger.error(
             "Failed to format availability",
@@ -52,27 +53,20 @@ def update_state_availability_in_s3(state_abbr: str, availability: dict) -> None
 
 
 def compare_availability(new_availability: dict, old_availability: dict) -> None:
-    for location_availability in new_availability["features"]:
-        location_availability_id = location_availability["id"]
-        old_location_availability = old_availability["features"].get(
-            location_availability_id,
-        )
+    for location_id, location_availability in new_availability["features"].items():
+        old_location_availability = old_availability["features"].get(location_id)
         if old_location_availability is None:
-            logger.info(
-                "Looks like a new location was added",
-                extra={"id": location_availability_id},
-            )
             continue
 
         if (
-            location_availability["appointments_last_fetched"]
-            == old_location_availability["appointments_last_fetched"]
+            location_availability['properties']["appointments_last_fetched"]
+            == old_location_availability['properties']["appointments_last_fetched"]
         ):
-            logger.info("Appointments havent been updated, skipping further processing")
+            # logger.info("Appointments havent been updated, skipping further processing")
             continue
 
-        old_appointment_count = len(old_location_availability["appointments"])
-        new_appointment_count = len(location_availability["appointments"])
+        old_appointment_count = len(old_location_availability['properties']["appointments"])
+        new_appointment_count = len(location_availability['properties']["appointments"])
 
         if old_appointment_count == 0 and new_appointment_count > 0:
             logger.info("Whoo there are new appointments available!!!")
