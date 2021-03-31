@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "app_name": "vaccine",
+  "autogen_policy": false,
+  "environment_variables": {
+    "VACCINE_AVAILABILITY_BUCKET": "nplutt-prod-vaccine-reminders",
+    "LOG_LEVEL": "INFO"
+  },
+  "iam_policy_file": "policy.json",
+  "lambda_memory_size": 512,
+  "lambda_timeout": 60,
+  "stages": {
+    "prod": {
+      "api_gateway_stage": "api"
+    }
+  },
+  "tags": {
+    "Name": "vaccine-availability",
+    "Environment": "prod",
+    "Project": "vaccine-availability"
+  }
+}
