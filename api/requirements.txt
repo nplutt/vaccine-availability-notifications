@@ -1,5 +1,8 @@
 boto3==1.17.41
 geopy==2.1.0
+pydantic==1.8.1
+pynamodb==5.0.3
 python-json-logger==2.0.1
 requests==2.25.1
 us==2.0.2
+zipcodes==1.1.2

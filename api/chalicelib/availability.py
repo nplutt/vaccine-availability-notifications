@@ -5,7 +5,7 @@ from typing import Tuple
 import boto3
 import us
 
-from chalicelib.logging import get_logger
+from chalicelib.logs.utils import get_logger
 from chalicelib.vaccinespotter import fetch_availability_for_state
 
 
@@ -52,26 +52,6 @@ def update_state_availability_in_s3(state_abbr: str, availability: dict) -> None
     )
 
 
-def compare_availability(new_availability: dict, old_availability: dict) -> None:
-    for location_id, location_availability in new_availability["features"].items():
-        old_location_availability = old_availability["features"].get(location_id)
-        if old_location_availability is None:
-            continue
-
-        if (
-            location_availability['properties']["appointments_last_fetched"]
-            == old_location_availability['properties']["appointments_last_fetched"]
-        ):
-            # logger.info("Appointments havent been updated, skipping further processing")
-            continue
-
-        old_appointment_count = len(old_location_availability['properties']["appointments"])
-        new_appointment_count = len(location_availability['properties']["appointments"])
-
-        if old_appointment_count == 0 and new_appointment_count > 0:
-            logger.info("Whoo there are new appointments available!!!")
-
-
 def fetch_state_availability_from_s3(key: str) -> Tuple[dict, dict]:
     object_versions = s3_client.list_object_versions(
         Bucket=os.environ["VACCINE_AVAILABILITY_BUCKET"],
@@ -94,3 +74,36 @@ def fetch_state_availability_from_s3(key: str) -> Tuple[dict, dict]:
         json.loads(new_state_availability["Body"].read().decode("utf-8")),
         json.loads(old_state_availability["Body"].read().decode("utf-8")),
     )
+
+
+def compare_availability(new_availability: dict, old_availability: dict) -> None:
+    for location_id, location_availability in new_availability["features"].items():
+        old_location_availability = old_availability["features"].get(location_id)
+        if old_location_availability is None:
+            continue
+
+        if (
+            location_availability['properties']["appointments_last_fetched"]
+            == old_location_availability['properties']["appointments_last_fetched"]
+        ):
+            # Appointments haven't been updated, skipping further processing
+            continue
+
+        old_appointment_count = _get_location_appointment_count(old_location_availability)
+        new_appointment_count = _get_location_appointment_count(location_availability)
+
+        if old_appointment_count == 0 and new_appointment_count > 0:
+            # Send event to SQS
+            logger.info("Wahoo there are new appointments available!!!")
+
+
+def _get_location_appointment_count(location: dict) -> int:
+    appointments = location['properties']["appointments"]
+    if appointments is None:
+        logger.info(
+            'Appointments value is null',
+            extra={'provider': location['properties']['provider']},
+        )
+        return 0
+    else:
+        return len(appointments)

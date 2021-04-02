@@ -10,6 +10,18 @@ vaccine appointments become available in your area.
 
 
 ## Engineering Notes
+* Vaccine Spotter API is crawled once every 5 minutes
+* Data processing pipeline does a diff on the data and the sends out emails based on users notification
+preferences
+
+### DynamoDB
+* Partition Key: `<zip code>+<notification distance>`
+* Range Key: `email`
+
+### Notifications
+* Emails sent using AWS SES
+* Each email has a **manage notifications** presigned url in it that will allow a user to go to the website and manage 
+their notifications
 
 ### Vaccine Spotter API
 * features: a list of vaccination locations
@@ -56,5 +68,4 @@ vaccine appointments become available in your area.
     }
   ]  
 }
-
 ```

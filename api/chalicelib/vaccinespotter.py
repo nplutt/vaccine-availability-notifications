@@ -3,7 +3,7 @@ from typing import Optional
 import requests
 from requests import HTTPError
 
-from chalicelib.logging import get_logger
+from chalicelib.logs.utils import get_logger
 
 
 logger = get_logger(__name__)

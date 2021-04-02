@@ -3,8 +3,10 @@
   "app_name": "vaccine",
   "autogen_policy": false,
   "environment_variables": {
-    "VACCINE_AVAILABILITY_BUCKET": "nplutt-prod-vaccine-reminders",
-    "LOG_LEVEL": "INFO"
+    "AVAILABILITY_UPDATE_INTERVAL": "5",
+    "DYNAMO_DB_TABLE_NAME": "user-vaccine-notifications-prod",
+    "LOG_LEVEL": "INFO",
+    "VACCINE_AVAILABILITY_BUCKET": "nplutt-prod-vaccine-reminders-data"
   },
   "iam_policy_file": "policy.json",
   "lambda_memory_size": 512,

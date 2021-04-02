@@ -16,7 +16,7 @@
         "s3:ListBucket",
         "s3:ListBucketVersions"
       ],
-      "Resource": "arn:aws:s3:::nplutt-prod-vaccine-reminders"
+      "Resource": "arn:aws:s3:::nplutt-prod-vaccine-reminders-data"
     },
     {
       "Effect": "Allow",
@@ -26,7 +26,7 @@
         "s3:ListObjectVersions",
         "s3:PutObject"
       ],
-      "Resource": "arn:aws:s3:::nplutt-prod-vaccine-reminders/*"
+      "Resource": "arn:aws:s3:::nplutt-prod-vaccine-reminders-data/*"
     }
   ]
 }

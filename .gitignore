@@ -132,6 +132,6 @@ dmypy.json
 **/.idea/
 
 # Chalice folders
-.chalice/deployments/
-.chalice/deployed/
-.chalice/venv/
+api/.chalice/deployments/
+api/.chalice/deployed/
+api/.chalice/venv/
