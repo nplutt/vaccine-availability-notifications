@@ -134,4 +134,4 @@ dmypy.json
 # Chalice folders
 api/.chalice/deployments/
 api/.chalice/deployed/
-api/.chalice/venv/
+api/.chalice/policy.json

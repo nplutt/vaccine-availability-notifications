@@ -1,7 +1,7 @@
 import logging
 import os
-from uuid import uuid4
 from typing import Optional
+from uuid import uuid4
 
 from pythonjsonlogger import jsonlogger
 
@@ -23,7 +23,7 @@ def get_logger(name):
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
     def add_fields(self, log_record, record, message_dict):
         super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
-        log_record['request_id'] = CURRENT_REQUEST_ID.get_request_id()
+        log_record["request_id"] = CURRENT_REQUEST_ID.get_request_id()
 
 
 class CurrentRequestId(object):

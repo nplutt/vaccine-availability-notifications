@@ -6,7 +6,7 @@ import boto3
 import us
 
 from chalicelib.logs.utils import get_logger
-from chalicelib.vaccinespotter import fetch_availability_for_state
+from chalicelib.services.vaccinespotter import fetch_availability_for_state
 
 
 logger = get_logger(__name__)
@@ -29,7 +29,7 @@ def format_availability(state_abbr: str, availability: dict) -> dict:
         features = availability.pop("features")
         availability["features"] = {}
         for f in features:
-            feature_id = f['properties']['id']
+            feature_id = f["properties"]["id"]
             availability["features"][feature_id] = f
     except (KeyError, IndexError) as e:
         logger.error(
@@ -83,13 +83,15 @@ def compare_availability(new_availability: dict, old_availability: dict) -> None
             continue
 
         if (
-            location_availability['properties']["appointments_last_fetched"]
-            == old_location_availability['properties']["appointments_last_fetched"]
+            location_availability["properties"]["appointments_last_fetched"]
+            == old_location_availability["properties"]["appointments_last_fetched"]
         ):
             # Appointments haven't been updated, skipping further processing
             continue
 
-        old_appointment_count = _get_location_appointment_count(old_location_availability)
+        old_appointment_count = _get_location_appointment_count(
+            old_location_availability,
+        )
         new_appointment_count = _get_location_appointment_count(location_availability)
 
         if old_appointment_count == 0 and new_appointment_count > 0:
@@ -98,11 +100,11 @@ def compare_availability(new_availability: dict, old_availability: dict) -> None
 
 
 def _get_location_appointment_count(location: dict) -> int:
-    appointments = location['properties']["appointments"]
+    appointments = location["properties"]["appointments"]
     if appointments is None:
         logger.info(
-            'Appointments value is null',
-            extra={'provider': location['properties']['provider']},
+            "Appointments value is null",
+            extra={"provider": location["properties"]["provider"]},
         )
         return 0
     else:

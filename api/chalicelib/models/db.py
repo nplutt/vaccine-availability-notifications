@@ -1,27 +1,29 @@
-from pynamodb.models import Model
-from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
-from pynamodb.attributes import UnicodeAttribute
 import os
 
+from pynamodb.attributes import UnicodeAttribute, NumberAttribute
+from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
+from pynamodb.models import Model
 
-class UserIndex(GlobalSecondaryIndex):
+
+class ZipcodeDistanceIndex(GlobalSecondaryIndex):
     class Meta:
-        index_name = 'user-index'
+        index_name = "zipcode-distance-index"
         projection = AllProjection()
+        read_capacity_units = 20
+        write_capacity_units = 5
+
+    zipcode_distance = UnicodeAttribute(hash_key=True)
+    updated_at = NumberAttribute(range_key=True)
+
+
+class UserModel(Model):
+    class Meta:
+        table_name = os.environ["DYNAMO_DB_TABLE_NAME"]
         read_capacity_units = 5
         write_capacity_units = 5
 
     email = UnicodeAttribute(hash_key=True)
+    zipcode_distance = UnicodeAttribute()
+    updated_at = NumberAttribute()
 
-
-class NotificationModel(Model):
-    class Meta:
-        table_name = os.environ['DYNAMO_DB_TABLE_NAME']
-        read_capacity_units = 20
-        write_capacity_units = 5
-
-    zipcode = UnicodeAttribute(hash_key=True)
-    miles_updated_at = UnicodeAttribute(range_key=True)
-    email = UnicodeAttribute()
-
-    user_index = UserIndex()
+    zipcode_distance_index = ZipcodeDistanceIndex()
