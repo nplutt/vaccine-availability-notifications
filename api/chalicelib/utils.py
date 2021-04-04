@@ -1,7 +1,8 @@
 import time
-from uuid import uuid4
-from chalicelib import singletons
 from typing import Optional
+from uuid import uuid4
+
+from chalicelib import singletons
 
 
 def ms_since_epoch(

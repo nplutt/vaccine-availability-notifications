@@ -1,22 +1,30 @@
-from pynamodb.models import DoesNotExist
+from typing import Iterator, List, Optional
+from pynamodb.exceptions import DoesNotExist
 
+
+from chalicelib.logs.decorators import func_time
 from chalicelib.models.db import UserModel
 from chalicelib.utils import ms_since_epoch
-from typing import Optional, List, Iterator
-from chalicelib.logs.decorators import func_time
 
 
-def create_user(email: str, zipcode: str, distance: int) -> UserModel:
+def create_user(parent_geohash: str, distance: int, zipcode: str, email: str) -> UserModel:
     """
     Creates a user
     """
+    updated_at = ms_since_epoch()
     user = UserModel(
         email=email,
-        zipcode_distance=f'{zipcode}+{distance}',
-        updated_at=ms_since_epoch(),
+        parent_geohash=parent_geohash,
+        distance_zipcode=UserModel.build_distance_zipcode(
+            distance=distance,
+            zipcode=zipcode,
+            updated_at=updated_at
+        ),
+        distance=distance,
+        zipcode=zipcode,
+        updated_at=updated_at,
     )
     user.save()
-    user.refresh()
     return user
 
 
@@ -45,9 +53,11 @@ def load_user_by_email(email: str) -> Optional[UserModel]:
 
 
 @func_time
-def batch_get_users_by_zipcode_distance(
-    zipcodes: List[str],
-    distance: str,
-) -> Iterator[UserModel]:
-    keys = [f'{zipcode}+{distance}' for zipcode in zipcodes]
-    return UserModel.zipcode_distance_index.batch_get(keys)
+def load_users_by_parent_geohash_distance(
+    parent_geohash: str,
+    distance: int,
+) -> List[UserModel]:
+    return list(UserModel.location_index.query(
+        parent_geohash,
+        UserModel.distance_zipcode.startswith(f'{distance}+')
+    ))

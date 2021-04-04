@@ -3,27 +3,37 @@ import os
 from pynamodb.attributes import UnicodeAttribute, NumberAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
+from chalicelib.utils import str_uuid
 
 
-class ZipcodeDistanceIndex(GlobalSecondaryIndex):
+class LocationIndex(GlobalSecondaryIndex):
     class Meta:
-        index_name = "zipcode-distance-index"
+        index_name = "location-index"
+        region = os.environ["REGION"]
         projection = AllProjection()
-        read_capacity_units = 20
+        read_capacity_units = 75
         write_capacity_units = 5
 
-    zipcode_distance = UnicodeAttribute(hash_key=True)
-    updated_at = NumberAttribute(range_key=True)
+    parent_geohash = UnicodeAttribute(hash_key=True)
+    distance_zipcode = UnicodeAttribute(range_key=True)
 
 
 class UserModel(Model):
     class Meta:
         table_name = os.environ["DYNAMO_DB_TABLE_NAME"]
+        region = os.environ["REGION"]
         read_capacity_units = 5
         write_capacity_units = 5
 
     email = UnicodeAttribute(hash_key=True)
-    zipcode_distance = UnicodeAttribute()
+    parent_geohash = UnicodeAttribute()
+    distance_zipcode = UnicodeAttribute()
+    distance = NumberAttribute()
+    zipcode = UnicodeAttribute()
     updated_at = NumberAttribute()
 
-    zipcode_distance_index = ZipcodeDistanceIndex()
+    location_index = LocationIndex()
+
+    @staticmethod
+    def build_distance_zipcode(distance: int, zipcode: str, updated_at: int) -> str:
+        return f"{distance}+{zipcode}+{updated_at}+{str_uuid().split('-')[4]}"

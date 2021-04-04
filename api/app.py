@@ -1,29 +1,40 @@
 import os
 
-from chalice import Chalice, ConvertToMiddleware, Cron, AuthResponse, Response
+from chalice import (
+    AuthResponse,
+    Chalice,
+    ConvertToMiddleware,
+    Cron,
+    ForbiddenError,
+    Response,
+)
 
-from chalicelib.services.availability import (
+from chalicelib import singletons
+from chalicelib.logs.decorators import set_request_id
+from chalicelib.logs.utils import get_logger
+from chalicelib.models.api import UserSchema
+from chalicelib.services.auth_service import access_token_valid, get_user_id
+from chalicelib.services.availability_service import (
     compare_availability,
     fetch_state_availability_from_s3,
     update_availability_for_all_states,
 )
-from chalicelib.logs.decorators import set_request_id
-from chalicelib.logs.utils import get_logger
-from chalicelib.services.auth import access_token_valid
-from chalicelib import singletons
-from chalicelib.models.api import UserSchema
+from chalicelib.services.user_service import create_new_user
+from chalicelib.services.email_service import notify_users
+
 
 app = Chalice(app_name="vaccine")
+app.debug = True
 app.register_middleware(ConvertToMiddleware(set_request_id), "all")
 singletons.app = app
 
 logger = get_logger(__name__)
 
 
-@app.authorizer(name='internal-authorizer')
+@app.authorizer(name="internal-authorizer")
 def internal_authorizer(auth_request):
-    invalid_response = AuthResponse(routes=[], principal_id='user')
-    valid_response = AuthResponse(routes=['/*'], principal_id='user')
+    invalid_response = AuthResponse(routes=[], principal_id="user")
+    valid_response = AuthResponse(routes=["/*"], principal_id="user")
     valid_token, _ = access_token_valid(auth_request.token)
     return valid_response if valid_token else invalid_response
 
@@ -33,23 +44,25 @@ def index():
     return {"ping": "pong"}
 
 
-@app.route("/user", methods=['POST'])
+@app.route("/notify_users", methods=["POST"])
+def handle_notify_users():
+    if app.current_request.method == "POST":
+        notify_users(app.current_request.json_body)
+
+
+@app.route("/user", methods=["POST"])
 def handle_create_user():
-    if app.current_request.method == 'POST':
-        user = UserSchema(**app.current_request.json_body)
-        # Create user
-        return Response(
-            body=None,
-            status_code=201,
-            headers={'Location': f"/users/{user}"}
-        )
+    if app.current_request.method == "POST":
+        user_schema = UserSchema(**app.current_request.json_body)
+        create_new_user(user_schema)
+        return Response(body=None, status_code=201)
 
 
-@app.route("/users/{user_id}", methods=['GET', 'PATCH'], authorizer=internal_authorizer)
-def handle_create_user(user_id):
-    if app.current_request.method == 'GET':
+@app.route("/user", methods=["GET", "PATCH"], authorizer=internal_authorizer)
+def handle_get_user():
+    if app.current_request.method == "GET":
         pass
-    elif app.current_request.method == 'PATCH':
+    elif app.current_request.method == "PATCH":
         pass
 
 

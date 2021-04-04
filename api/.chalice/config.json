@@ -4,6 +4,7 @@
   "autogen_policy": false,
   "environment_variables": {
     "AVAILABILITY_UPDATE_INTERVAL": "5",
+    "REGION": "us-west-2",
     "DYNAMO_DB_TABLE_NAME": "user-vaccine-notifications-prod",
     "LOG_LEVEL": "INFO",
     "VACCINE_AVAILABILITY_BUCKET": "nplutt-prod-vaccine-reminders-data"
@@ -13,7 +14,12 @@
   "lambda_timeout": 60,
   "stages": {
     "prod": {
-      "api_gateway_stage": "api"
+      "api_gateway_stage": "api",
+      "lambda_functions": {
+        "diff-availability": {
+          "lambda_timeout": 120
+        }
+      }
     }
   },
   "tags": {
