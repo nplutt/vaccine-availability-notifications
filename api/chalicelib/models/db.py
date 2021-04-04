@@ -1,8 +1,9 @@
 import os
 
-from pynamodb.attributes import UnicodeAttribute, NumberAttribute
+from pynamodb.attributes import NumberAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
+
 from chalicelib.utils import str_uuid
 
 

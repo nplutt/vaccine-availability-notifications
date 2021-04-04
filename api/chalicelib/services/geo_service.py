@@ -1,11 +1,14 @@
+import math
 from collections import defaultdict
 from typing import Dict, List
-import math
+import os
+import bz2
+import json
 
+import pygeohash
 import zipcodes
 from geopy.distance import geodesic
 from geopy.units import meters
-import pygeohash
 
 from chalicelib.logs.decorators import func_time
 from chalicelib.logs.utils import get_logger
@@ -13,22 +16,36 @@ from chalicelib.logs.utils import get_logger
 
 logger = get_logger(__name__)
 
-GEOHASH_PRECISION = 3
+SEARCH_RADIUS_GEOHASH_PRECISION = {
+    5: 4,
+    10: 4,
+    25: 3,
+    50: 3,
+}
+
+_ziphash_json = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "../static/ziphash.json.bz2",
+)
+with bz2.BZ2File(_ziphash_json, "rb") as f:
+    ziphash = json.loads(f.read().decode("ascii"))
 
 
-def get_zipcode_parent_geohash(zipcode: str) -> str:
+def get_zipcode_parent_geohash(zipcode: str, search_radius: int) -> str:
     zipcode_info = zipcodes.matching(zipcode)[0]
     return pygeohash.encode(
-        float(zipcode_info['lat']),
-        float(zipcode_info['long']),
-        GEOHASH_PRECISION,
+        float(zipcode_info["lat"]),
+        float(zipcode_info["long"]),
+        SEARCH_RADIUS_GEOHASH_PRECISION[search_radius],
     )
 
 
-@func_time
-def find_geohashes_in_radius(lat: float, long: float, radius_miles: int) -> List[str]:
-    radius_meters = meters(miles=radius_miles)
-    return list(create_geohash(lat, long, radius_meters, GEOHASH_PRECISION))
+def find_geohashes_in_radius(lat: float, long: float, search_radius: int) -> List[str]:
+    radius_meters = meters(miles=search_radius)
+    return list(
+        create_geohash(
+            lat, long, radius_meters, SEARCH_RADIUS_GEOHASH_PRECISION[search_radius],
+        ),
+    )
 
 
 @func_time
@@ -56,6 +73,30 @@ def find_zipcode_distances(
     return zipcode_distance_map
 
 
+@func_time
+def find_zipcodes_in_radius(
+    geohashes: List[str],
+    location_coordinates: List[int],
+    radius: int,
+) -> dict:
+    geohashes = [x[:-1] for x in geohashes if len(x) == 4]
+
+    zipcodes = []
+    for geohash in geohashes:
+        zipcodes += ziphash[geohash]
+
+    zipcode_distances: Dict[str, int] = {}
+    for zipcode_info in zipcodes:
+        zipcode = zipcode_info["zip_code"]
+        coordinates = zipcode_info["coordinates"]
+
+        distance = geodesic(location_coordinates, coordinates).miles
+        if distance <= radius:
+            zipcode_distances[zipcode] = distance
+
+    return zipcode_distances
+
+
 def in_circle_check(latitude, longitude, centre_lat, centre_lon, radius):
     x_diff = longitude - centre_lon
     y_diff = latitude - centre_lat
@@ -79,10 +120,10 @@ def convert_to_latlon(y, x, latitude, longitude):
     r_earth = 6371000
 
     lat_diff = (y / r_earth) * (180 / pi)
-    lon_diff = (x / r_earth) * (180 / pi) / math.cos(latitude * pi/180)
+    lon_diff = (x / r_earth) * (180 / pi) / math.cos(latitude * pi / 180)
 
-    final_lat = latitude+lat_diff
-    final_lon = longitude+lon_diff
+    final_lat = latitude + lat_diff
+    final_lon = longitude + lon_diff
 
     return final_lat, final_lon
 
@@ -94,22 +135,48 @@ def create_geohash(latitude: float, longitude: float, radius: int, precision):
     points = []
     geohashes = []
 
-    grid_width = [5009400.0, 1252300.0, 156500.0, 39100.0, 4900.0, 1200.0, 152.9, 38.2, 4.8, 1.2, 0.149, 0.0370]
-    grid_height = [4992600.0, 624100.0, 156000.0, 19500.0, 4900.0, 609.4, 152.4, 19.0, 4.8, 0.595, 0.149, 0.0199]
+    grid_width = [
+        5009400.0,
+        1252300.0,
+        156500.0,
+        39100.0,
+        4900.0,
+        1200.0,
+        152.9,
+        38.2,
+        4.8,
+        1.2,
+        0.149,
+        0.0370,
+    ]
+    grid_height = [
+        4992600.0,
+        624100.0,
+        156000.0,
+        19500.0,
+        4900.0,
+        609.4,
+        152.4,
+        19.0,
+        4.8,
+        0.595,
+        0.149,
+        0.0199,
+    ]
 
-    height = (grid_height[precision - 1])/2
-    width = (grid_width[precision-1])/2
+    height = (grid_height[precision - 1]) / 2
+    width = (grid_width[precision - 1]) / 2
 
     lat_moves = int(math.ceil(radius / height))
     lon_moves = int(math.ceil(radius / width))
 
     for i in range(0, lat_moves):
 
-        temp_lat = y + height*i
+        temp_lat = y + height * i
 
         for j in range(0, lon_moves):
 
-            temp_lon = x + width*j
+            temp_lon = x + width * j
 
             if in_circle_check(temp_lat, temp_lon, y, x, radius):
 

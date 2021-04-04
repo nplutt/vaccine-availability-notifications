@@ -19,7 +19,7 @@ def create_new_user(body: UserSchema) -> UserModel:
         raise ConflictError
 
     return create_user(
-        parent_geohash=get_zipcode_parent_geohash(body.zipcode),
+        parent_geohash=get_zipcode_parent_geohash(body.zipcode, body.distance),
         distance=body.distance,
         zipcode=body.zipcode,
         email=body.email,

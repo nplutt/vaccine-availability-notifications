@@ -6,10 +6,10 @@ import boto3
 import us
 
 from chalicelib.logs.utils import get_logger
+from chalicelib.services.email_service import notify_users
 from chalicelib.services.vaccinespotter_service import (
     fetch_availability_for_state,
 )
-from chalicelib.services.email_service import notify_users
 
 
 logger = get_logger(__name__)
@@ -80,6 +80,7 @@ def fetch_state_availability_from_s3(key: str) -> Tuple[dict, dict]:
 
 
 def compare_availability(new_availability: dict, old_availability: dict) -> None:
+    availabilities = []
     for location_id, location_availability in new_availability["features"].items():
         old_location_availability = old_availability["features"].get(location_id)
         if old_location_availability is None:
@@ -98,9 +99,10 @@ def compare_availability(new_availability: dict, old_availability: dict) -> None
         new_appointment_count = _get_location_appointment_count(location_availability)
 
         if old_appointment_count == 0 and new_appointment_count > 0:
-            # Send event to SQS
             logger.info("Wahoo there are new appointments available!!!")
-            # notify_users(location_availability)
+            availabilities.append(location_availability)
+
+    logger.info("Locations with new appointments", extra={"count": len(availabilities)})
 
 
 def _get_location_appointment_count(location: dict) -> int:

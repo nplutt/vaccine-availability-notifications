@@ -1,13 +1,7 @@
+import asyncio
 import os
 
-from chalice import (
-    AuthResponse,
-    Chalice,
-    ConvertToMiddleware,
-    Cron,
-    ForbiddenError,
-    Response,
-)
+from chalice import AuthResponse, Chalice, ConvertToMiddleware, Cron, Response
 
 from chalicelib import singletons
 from chalicelib.logs.decorators import set_request_id
@@ -19,8 +13,9 @@ from chalicelib.services.availability_service import (
     fetch_state_availability_from_s3,
     update_availability_for_all_states,
 )
+from chalicelib.services.email_service import bulk_notify_users, notify_users
 from chalicelib.services.user_service import create_new_user
-from chalicelib.services.email_service import notify_users
+from chalicelib.utils import get_or_create_eventloop
 
 
 app = Chalice(app_name="vaccine")
@@ -44,10 +39,17 @@ def index():
     return {"ping": "pong"}
 
 
-@app.route("/notify_users", methods=["POST"])
-def handle_notify_users():
+@app.route("/v1/notify_users", methods=["POST"])
+def handle_notify_users_1():
     if app.current_request.method == "POST":
         notify_users(app.current_request.json_body)
+
+
+@app.route("/v2/notify_users", methods=["POST"])
+def handle_notify_users_2():
+    if app.current_request.method == "POST":
+        loop = get_or_create_eventloop()
+        loop.run_until_complete(bulk_notify_users(app.current_request.json_body))
 
 
 @app.route("/user", methods=["POST"])

@@ -1,8 +1,6 @@
+import asyncio
 import time
-from typing import Optional
 from uuid import uuid4
-
-from chalicelib import singletons
 
 
 def ms_since_epoch(
@@ -23,3 +21,13 @@ def ms_since_epoch(
 
 def str_uuid() -> str:
     return str(uuid4())
+
+
+def get_or_create_eventloop():
+    try:
+        return asyncio.get_event_loop()
+    except RuntimeError as ex:
+        if "There is no current event loop in thread" in str(ex):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            return asyncio.get_event_loop()
