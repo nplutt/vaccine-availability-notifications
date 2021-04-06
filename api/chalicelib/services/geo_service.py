@@ -49,18 +49,22 @@ def find_geohashes_in_radius(lat: float, long: float, search_radius: int) -> Lis
 
 
 @func_time
-def find_zipcode_distances(
-    state_abbr: str,
-    location_coordinates: List[int],
-) -> dict:
+def find_zipcodes_in_radius(lat: float, long: float, search_radius: int) -> dict:
+    geohashes = find_geohashes_in_radius(lat, long, search_radius)
+    if SEARCH_RADIUS_GEOHASH_PRECISION[search_radius] == 4:
+        geohashes = [x[:-1] for x in geohashes]
+
+    zipcodes_in_radius = []
+    for geohash in geohashes:
+        # geohashes in the ocean don't have a zipcode!
+        zipcodes_in_radius += ziphash.get(geohash, [])
+
     zipcode_distance_map: Dict[int, Dict[str, int]] = defaultdict(dict)
-
-    state_zipcodes = zipcodes.filter_by(active=True, state=state_abbr)
-    for zipcode_info in state_zipcodes:
+    for zipcode_info in zipcodes_in_radius:
         zipcode = zipcode_info["zip_code"]
-        coordinates = [zipcode_info["lat"], zipcode_info["long"]]
+        coordinates = zipcode_info["coordinates"]
 
-        distance = geodesic(location_coordinates, coordinates).miles
+        distance = geodesic([lat, long], coordinates).miles
         if distance <= 5:
             zipcode_distance_map[5][zipcode] = distance
         if distance <= 10:
@@ -71,30 +75,6 @@ def find_zipcode_distances(
             zipcode_distance_map[50][zipcode] = distance
 
     return zipcode_distance_map
-
-
-@func_time
-def find_zipcodes_in_radius(
-    geohashes: List[str],
-    location_coordinates: List[int],
-    radius: int,
-) -> dict:
-    geohashes = [x[:-1] for x in geohashes if len(x) == 4]
-
-    zipcodes = []
-    for geohash in geohashes:
-        zipcodes += ziphash[geohash]
-
-    zipcode_distances: Dict[str, int] = {}
-    for zipcode_info in zipcodes:
-        zipcode = zipcode_info["zip_code"]
-        coordinates = zipcode_info["coordinates"]
-
-        distance = geodesic(location_coordinates, coordinates).miles
-        if distance <= radius:
-            zipcode_distances[zipcode] = distance
-
-    return zipcode_distances
 
 
 def in_circle_check(latitude, longitude, centre_lat, centre_lon, radius):

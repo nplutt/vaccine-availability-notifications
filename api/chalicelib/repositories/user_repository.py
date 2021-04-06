@@ -51,7 +51,6 @@ def load_user_by_email(email: str) -> Optional[UserModel]:
         return None
 
 
-@func_time
 def load_users_by_parent_geohash_distance(
     parent_geohash: str,
     distance: int,

@@ -1,6 +1,7 @@
 import asyncio
 import time
 from uuid import uuid4
+from typing import List, Any
 
 
 def ms_since_epoch(
@@ -21,6 +22,11 @@ def ms_since_epoch(
 
 def str_uuid() -> str:
     return str(uuid4())
+
+
+def chunk_list(lst: List[Any], n: int):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 
 def get_or_create_eventloop():

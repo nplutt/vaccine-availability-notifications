@@ -1,4 +1,3 @@
-import asyncio
 import os
 
 from chalice import AuthResponse, Chalice, ConvertToMiddleware, Cron, Response
@@ -7,15 +6,15 @@ from chalicelib import singletons
 from chalicelib.logs.decorators import set_request_id
 from chalicelib.logs.utils import get_logger
 from chalicelib.models.api import UserSchema
-from chalicelib.services.auth_service import access_token_valid, get_user_id
+from chalicelib.services.auth_service import access_token_valid
 from chalicelib.services.availability_service import (
     compare_availability,
     fetch_state_availability_from_s3,
     update_availability_for_all_states,
 )
-from chalicelib.services.email_service import bulk_notify_users, notify_users
-from chalicelib.services.user_service import create_new_user
+from chalicelib.services.user_service import create_new_user, find_users_to_notify_for_location, bulk_notify_users
 from chalicelib.utils import get_or_create_eventloop
+import json
 
 
 app = Chalice(app_name="vaccine")
@@ -42,7 +41,7 @@ def index():
 @app.route("/v1/notify_users", methods=["POST"])
 def handle_notify_users_1():
     if app.current_request.method == "POST":
-        notify_users(app.current_request.json_body)
+        find_users_to_notify_for_location(app.current_request.json_body)
 
 
 @app.route("/v2/notify_users", methods=["POST"])
@@ -72,7 +71,7 @@ def handle_get_user():
     Cron(f'0/{os.environ["AVAILABILITY_UPDATE_INTERVAL"]}', "*", "*", "*", "?", "*"),
     name="update-availability",
 )
-def update_availability(event):
+def handle_update_availability(event):
     update_availability_for_all_states()
 
 
@@ -81,10 +80,21 @@ def update_availability(event):
     events=["s3:ObjectCreated:*"],
     name="diff-availability",
 )
-def diff_availability(event):
+def handle_diff_availability(event):
     logger.info(
         "Updating availability for state",
         extra={"state": event.key},
     )
     new_availability, old_availability = fetch_state_availability_from_s3(event.key)
     compare_availability(new_availability, old_availability)
+
+
+@app.on_sqs_message(
+    queue=os.environ['LOCATION_AVAILABILITY_QUEUE_NAME'],
+    name='process-location-availability',
+)
+def handle_process_location_availability(event):
+    for record in event:
+        locations = json.loads(record.body)
+        loop = get_or_create_eventloop()
+        loop.run_until_complete(bulk_notify_users(locations))
