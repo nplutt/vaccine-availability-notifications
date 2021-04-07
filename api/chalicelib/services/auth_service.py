@@ -8,20 +8,19 @@ from chalicelib import singletons
 from chalicelib.utils import ms_since_epoch
 
 
-def generate_access_token(user_id: str, user_email: str) -> str:
+def generate_access_token(user_email: str) -> str:
     """
     Generates a JWT token for a given user that is valid for n number of days
     """
     payload = {
-        "user_id": user_id,
         "email": user_email,
-        "exp": ms_since_epoch(days=90),
+        "exp": ms_since_epoch(days=30),
     }
     return jwt.encode(
         payload=payload,
         key=os.environ["JWT_SECRET"],
         algorithm="HS256",
-    ).decode("utf-8")
+    )
 
 
 def access_token_valid(token: str) -> Tuple[bool, Optional[str]]:
@@ -37,10 +36,13 @@ def access_token_valid(token: str) -> Tuple[bool, Optional[str]]:
     except PyJWTError:
         return False, None
 
-    return payload["exp"] < ms_since_epoch(), payload["user_id"]
+    return payload["exp"] < ms_since_epoch(), payload["email"]
 
 
-def get_user_id() -> Optional[str]:
+def get_user_email() -> Optional[str]:
+    if not singletons.app:
+        return None
+
     token = singletons.app.current_request.headers.get("Authorization").split(" ")[1]
-    _, user_id = access_token_valid(token)
-    return user_id
+    _, email = access_token_valid(token)
+    return email

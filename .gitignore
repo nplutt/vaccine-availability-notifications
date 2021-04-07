@@ -134,7 +134,7 @@ dmypy.json
 # Chalice folders
 api/.chalice/deployments/
 api/.chalice/deployed/
-api/.chalice/policy.json
+api/.chalice/*.json
 
 # Testing folders
 api/bin/testing/

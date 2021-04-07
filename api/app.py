@@ -1,3 +1,4 @@
+import json
 import os
 
 from chalice import AuthResponse, Chalice, ConvertToMiddleware, Cron, Response
@@ -12,9 +13,15 @@ from chalicelib.services.availability_service import (
     fetch_state_availability_from_s3,
     update_availability_for_all_states,
 )
-from chalicelib.services.user_service import create_new_user, find_users_to_notify_for_location, bulk_notify_users
+from chalicelib.services.email_service import (
+    send_new_appointment_emails_to_users,
+)
+from chalicelib.services.user_service import (
+    create_new_user,
+    find_users_to_notify_for_location,
+    find_users_to_notify_for_locations,
+)
 from chalicelib.utils import get_or_create_eventloop
-import json
 
 
 app = Chalice(app_name="vaccine")
@@ -48,7 +55,10 @@ def handle_notify_users_1():
 def handle_notify_users_2():
     if app.current_request.method == "POST":
         loop = get_or_create_eventloop()
-        loop.run_until_complete(bulk_notify_users(app.current_request.json_body))
+        users = loop.run_until_complete(
+            find_users_to_notify_for_locations(app.current_request.json_body),
+        )
+        # send_new_appointment_emails_to_users(users)
 
 
 @app.route("/user", methods=["POST"])
@@ -90,11 +100,12 @@ def handle_diff_availability(event):
 
 
 @app.on_sqs_message(
-    queue=os.environ['LOCATION_AVAILABILITY_QUEUE_NAME'],
-    name='process-location-availability',
+    queue=os.environ["LOCATION_AVAILABILITY_QUEUE_NAME"],
+    name="process-location-availability",
 )
 def handle_process_location_availability(event):
     for record in event:
         locations = json.loads(record.body)
         loop = get_or_create_eventloop()
-        loop.run_until_complete(bulk_notify_users(locations))
+        users = loop.run_until_complete(find_users_to_notify_for_locations(locations))
+        # send_new_appointment_emails_to_users(users)

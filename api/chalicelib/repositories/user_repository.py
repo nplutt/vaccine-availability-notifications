@@ -1,14 +1,18 @@
-from typing import Iterator, List, Optional
+from typing import List, Optional
 
 from pynamodb.exceptions import DoesNotExist
 
-from chalicelib.logs.decorators import func_time
 from chalicelib.models.db import UserModel
 from chalicelib.utils import ms_since_epoch
 
 
 def create_user(
-    parent_geohash: str, distance: int, zipcode: str, email: str,
+    parent_geohash: str,
+    distance: int,
+    zipcode: str,
+    email: str,
+    state_abbr: str,
+    timezone: str,
 ) -> UserModel:
     """
     Creates a user
@@ -18,10 +22,14 @@ def create_user(
         email=email,
         parent_geohash=parent_geohash,
         distance_zipcode=UserModel.build_distance_zipcode(
-            distance=distance, zipcode=zipcode, updated_at=updated_at,
+            distance=distance,
+            zipcode=zipcode,
+            updated_at=updated_at,
         ),
         distance=distance,
         zipcode=zipcode,
+        state_abbr=state_abbr,
+        timezone=timezone,
         updated_at=updated_at,
     )
     user.save()
@@ -57,6 +65,7 @@ def load_users_by_parent_geohash_distance(
 ) -> List[UserModel]:
     return list(
         UserModel.location_index.query(
-            parent_geohash, UserModel.distance_zipcode.startswith(f"{distance}+"),
+            parent_geohash,
+            UserModel.distance_zipcode.startswith(f"{distance}+"),
         ),
     )

@@ -31,6 +31,8 @@ class UserModel(Model):
     distance_zipcode = UnicodeAttribute()
     distance = NumberAttribute()
     zipcode = UnicodeAttribute()
+    state_abbr = UnicodeAttribute()
+    timezone = UnicodeAttribute()
     updated_at = NumberAttribute()
 
     location_index = LocationIndex()

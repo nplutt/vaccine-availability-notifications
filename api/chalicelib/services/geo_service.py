@@ -1,9 +1,9 @@
-import math
-from collections import defaultdict
-from typing import Dict, List
-import os
 import bz2
 import json
+import math
+import os
+from collections import defaultdict
+from typing import Dict, List
 
 import pygeohash
 import zipcodes
@@ -24,7 +24,8 @@ SEARCH_RADIUS_GEOHASH_PRECISION = {
 }
 
 _ziphash_json = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "../static/ziphash.json.bz2",
+    os.path.dirname(os.path.abspath(__file__)),
+    "../static/ziphash.json.bz2",
 )
 with bz2.BZ2File(_ziphash_json, "rb") as f:
     ziphash = json.loads(f.read().decode("ascii"))
@@ -43,7 +44,10 @@ def find_geohashes_in_radius(lat: float, long: float, search_radius: int) -> Lis
     radius_meters = meters(miles=search_radius)
     return list(
         create_geohash(
-            lat, long, radius_meters, SEARCH_RADIUS_GEOHASH_PRECISION[search_radius],
+            lat,
+            long,
+            radius_meters,
+            SEARCH_RADIUS_GEOHASH_PRECISION[search_radius],
         ),
     )
 

@@ -1,0 +1,15 @@
+Hello,
+
+There are {{ location_count }} new locations with appointments available within {{ user.distance }} of {{ user.zipcode }}!
+
+{% for l in locations -%}
+{{ l.title }}
+* Appointments available as of {{ l.last_updated }}
+* {{ l.distance }} miles from {{ user.zipcode }}
+* Visit website at {{ l.url }}
+
+{% endfor %}
+Visit https://vaccinespotter.org/{{ user.state_abbr }}/?zip={{ user.zipcode }}&radius={{ user.distance }} for the most up to date vaccine availability.
+
+
+To unsubscribe go to https://covid-vaccine-notifications/unsubscribe?token={{ user.token }}
