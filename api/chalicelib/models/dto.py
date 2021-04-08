@@ -25,7 +25,7 @@ class LocationDTO(object):
     def format_last_updated(self, user_timezone: str) -> str:
         if self.last_updated is None:
             return ""
-        return self.last_updated.in_timezone(user_timezone).format("M/D/Y, h:m A zz")
+        return self.last_updated.in_timezone(user_timezone).format("M/D/Y, h:mm A zz")
 
     def email_context(self, user_timezone: str) -> dict:
         address_text = f"{self.address}, " if self.address else ""

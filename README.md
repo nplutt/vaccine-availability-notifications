@@ -1,5 +1,5 @@
 # Covid Vaccine Availability Notification
-Tooling is built off of [vaccinespotter](https://vaccinespotter.org) to send you notifications when
+Tooling built off of [vaccinespotter](https://vaccinespotter.org) to send you notifications when
 COVID-19 vaccine appointments become available in your area. If you'd like to use the tool, it is available 
 at [covid-vaccine-notifications.org](https://covid-vaccine-notifications.org)!
 

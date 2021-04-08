@@ -354,7 +354,7 @@
                     <tr>
                       <td>
                         <p>Hello,</p>
-                        <p>There are {{ location_count }} new locations with appointments available within {{ user.distance }} of {{ user.zipcode }}!</p>
+                        <p>There are {{ location_count }} new locations with appointments available within {{ user.distance }} miles of {{ user.zipcode }}!</p>
                         {% for l in locations -%}
                         <b>{{ l.title }} ({{ l.distance }} miles)</b><br>
                         <div class="appointments-available">
