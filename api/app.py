@@ -7,7 +7,7 @@ from chalicelib import singletons
 from chalicelib.logs.decorators import set_request_id
 from chalicelib.logs.utils import get_logger
 from chalicelib.models.api import UserSchema
-from chalicelib.services.auth_service import access_token_valid
+from chalicelib.services.auth_service import access_token_valid, get_user_email
 from chalicelib.services.availability_service import (
     compare_availability,
     fetch_state_availability_from_s3,
@@ -18,8 +18,11 @@ from chalicelib.services.email_service import (
 )
 from chalicelib.services.user_service import (
     create_new_user,
+    delete_user,
+    fetch_user,
     find_users_to_notify_for_location,
     find_users_to_notify_for_locations,
+    update_user,
 )
 from chalicelib.utils import get_or_create_eventloop
 
@@ -36,7 +39,14 @@ logger = get_logger(__name__)
 def internal_authorizer(auth_request):
     invalid_response = AuthResponse(routes=[], principal_id="user")
     valid_response = AuthResponse(routes=["/*"], principal_id="user")
-    valid_token, _ = access_token_valid(auth_request.token)
+
+    try:
+        authorization_header = auth_request.token
+        bearer_token = authorization_header.split(" ")[1]
+    except IndexError:
+        return invalid_response
+
+    valid_token, _ = access_token_valid(bearer_token)
     return valid_response if valid_token else invalid_response
 
 
@@ -58,10 +68,10 @@ def handle_notify_users_2():
         users = loop.run_until_complete(
             find_users_to_notify_for_locations(app.current_request.json_body),
         )
-        # send_new_appointment_emails_to_users(users)
+        send_new_appointment_emails_to_users(users)
 
 
-@app.route("/user", methods=["POST"])
+@app.route("/user", methods=["POST"], cors=True)
 def handle_create_user():
     if app.current_request.method == "POST":
         user_schema = UserSchema(**app.current_request.json_body)
@@ -69,12 +79,30 @@ def handle_create_user():
         return Response(body=None, status_code=201)
 
 
-@app.route("/user", methods=["GET", "PATCH"], authorizer=internal_authorizer)
+@app.route(
+    "/user",
+    methods=["GET", "PATCH", "DELETE"],
+    authorizer=internal_authorizer,
+    cors=True,
+)
 def handle_get_user():
+    user = fetch_user(get_user_email())
+
     if app.current_request.method == "GET":
-        pass
+        return {
+            "email": user.email,
+            "zipcode": user.zipcode,
+            "distance": user.distance,
+        }
+
     elif app.current_request.method == "PATCH":
-        pass
+        user_schema = UserSchema(**app.current_request.json_body)
+        update_user(user_schema, user)
+        return Response(body=None, status_code=204)
+
+    elif app.current_request.method == "DELETE":
+        delete_user(user)
+        return Response(body=None, status_code=204)
 
 
 @app.schedule(
@@ -108,4 +136,4 @@ def handle_process_location_availability(event):
         locations = json.loads(record.body)
         loop = get_or_create_eventloop()
         users = loop.run_until_complete(find_users_to_notify_for_locations(locations))
-        # send_new_appointment_emails_to_users(users)
+        send_new_appointment_emails_to_users(users)

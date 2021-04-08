@@ -2,7 +2,7 @@ import asyncio
 from typing import Dict, List, Optional
 
 import zipcodes
-from chalice import ConflictError
+from chalice import ConflictError, NotFoundError
 
 from chalicelib.logs.decorators import func_time
 from chalicelib.logs.utils import get_logger
@@ -20,7 +20,7 @@ from chalicelib.services.geo_service import (
     find_zipcodes_in_radius,
     get_zipcode_parent_geohash,
 )
-from chalicelib.utils import get_or_create_eventloop
+from chalicelib.utils import get_or_create_eventloop, ms_since_epoch
 
 
 logger = get_logger(__name__)
@@ -40,6 +40,27 @@ def create_new_user(body: UserSchema) -> UserModel:
         state_abbr=zipcode_info["state"],
         timezone=zipcode_info["timezone"],
     )
+
+
+def fetch_user(email: str) -> UserModel:
+    user = load_user_by_email(email)
+    if not user:
+        raise NotFoundError
+
+    return user
+
+
+def update_user(body: UserSchema, user: UserModel) -> UserModel:
+    user.zipcode = body.zipcode
+    user.distance = body.distance
+    user.updated_at = ms_since_epoch()
+    user.save()
+    return user
+
+
+def delete_user(user: UserModel) -> UserModel:
+    user.delete()
+    return user
 
 
 @func_time

@@ -5,7 +5,11 @@ import jwt
 from jwt import PyJWTError
 
 from chalicelib import singletons
+from chalicelib.logs.utils import get_logger
 from chalicelib.utils import ms_since_epoch
+
+
+logger = get_logger(__name__)
 
 
 def generate_access_token(user_email: str) -> str:

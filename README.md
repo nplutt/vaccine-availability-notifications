@@ -1,22 +1,32 @@
 # Covid Vaccine Availability Notification
-This tool is built off of [vaccinespotter](https://vaccinespotter.org) and will send you notifications when
-vaccine appointments become available in your area.
+Tooling is built off of [vaccinespotter](https://vaccinespotter.org) to send you notifications when
+COVID-19 vaccine appointments become available in your area. If you'd like to use the tool, it is available 
+at [covid-vaccine-notifications.org](https://covid-vaccine-notifications.org)!
 
-## Upcoming Work
-- UI to register and manage notification preferences
-- Add API to register/unregister for notifications
-- Create DynamoDB table to handle looking up people to notify
-- Testing
-
+## Work to Do
+- Add better error handling to the front end
+- Add tests to the backend 
+- Add documentation to the backend
+- Cleanup styling in emails and frontend
+- Add architecture diagram to documentation
+- Add Q&A to the website
+    * Who created it & where source code is
+    * Shout out vaccine spotter
+    * What happens with data
 
 ## Engineering Notes
-* Vaccine Spotter API is crawled once every 5 minutes
+* Vaccine Spotter API is crawled once every 3 minutes
 * Data processing pipeline does a diff on the data and the sends out emails based on users notification
 preferences
 
 ### DynamoDB
-* Partition Key: `<zip code>+<notification distance>`
-* Range Key: `email`
+Main:
+* Partition Key: `email`
+
+GSI:
+* Partition Key: `parent_geohash` (a level 3 geohash of the zipcode)
+* Range Key: `distance+zipcode` (user's distance preference combined with the zipcode they're located in)
+
 
 ### Notifications
 * Emails sent using AWS SES

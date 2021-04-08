@@ -19,6 +19,9 @@ ses_client = boto3.client("ses")
 
 @func_time
 def send_new_appointment_emails_to_users(users: List[UserEmailDTO]) -> None:
+    if os.environ.get("SEND_EMAILS") != "TRUE":
+        return None
+
     for chunk in chunk_list(users, 50):
         ses_client.send_bulk_templated_email(
             Source=os.environ["SES_REPLY_TO_ADDRESS"],

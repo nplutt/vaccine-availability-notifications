@@ -36,18 +36,6 @@ def create_user(
     return user
 
 
-def delete_user_by_email(email: str) -> Optional[UserModel]:
-    """
-    Loads a user from the database and deletes them
-    """
-    user = load_user_by_email(email)
-    if not user:
-        return None
-
-    user.delete()
-    return user
-
-
 def load_user_by_email(email: str) -> Optional[UserModel]:
     """
     Loads a user from the database

@@ -28,6 +28,7 @@ def main():
             "JWT_SECRET": jwt_secret,
             "LOCATION_AVAILABILITY_QUEUE_NAME": "vaccine-reminders-location-availability-prod",
             "LOCATION_AVAILABILITY_QUEUE_URL": f"https://sqs.us-west-2.amazonaws.com/{account_id}/vaccine-reminders-location-availability-prod",
+            "SEND_EMAILS": "TRUE",
             "SES_EMAIL_TEMPLATE": "vaccine-reminders-basic-template",
             "SES_REPLY_TO_ADDRESS": "notifications@covid-vaccine-notifications.org",
             "VACCINE_AVAILABILITY_BUCKET": "nplutt-prod-vaccine-reminders-data",

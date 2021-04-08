@@ -11,3 +11,16 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.siteContent {
+  max-width: 800px;
+  margin-top: 50px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.baseForm {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
