@@ -1,7 +1,7 @@
 import json
 import os
 
-from chalice import AuthResponse, Chalice, ConvertToMiddleware, Cron, Response
+from chalice import AuthResponse, BadRequestError, Chalice, ConvertToMiddleware, Cron, Response
 
 from chalicelib import singletons
 from chalicelib.logs.decorators import set_request_id
@@ -20,11 +20,11 @@ from chalicelib.services.user_service import (
     create_new_user,
     delete_user,
     fetch_user,
-    find_users_to_notify_for_location,
     find_users_to_notify_for_locations,
     update_user,
 )
 from chalicelib.utils import get_or_create_eventloop
+from pydantic import ValidationError
 
 
 app = Chalice(app_name="vaccine")
@@ -55,54 +55,50 @@ def index():
     return {"ping": "pong"}
 
 
-@app.route("/v1/notify_users", methods=["POST"])
-def handle_notify_users_1():
-    if app.current_request.method == "POST":
-        find_users_to_notify_for_location(app.current_request.json_body)
-
-
-@app.route("/v2/notify_users", methods=["POST"])
-def handle_notify_users_2():
-    if app.current_request.method == "POST":
-        loop = get_or_create_eventloop()
-        users = loop.run_until_complete(
-            find_users_to_notify_for_locations(app.current_request.json_body),
-        )
-        send_new_appointment_emails_to_users(users)
-
-
 @app.route("/user", methods=["POST"], cors=True)
 def handle_create_user():
-    if app.current_request.method == "POST":
+    try:
         user_schema = UserSchema(**app.current_request.json_body)
-        create_new_user(user_schema)
-        return Response(body=None, status_code=201)
+    except ValidationError as e:
+        return Response(
+            body=e.errors(),
+            status_code=BadRequestError.STATUS_CODE,
+        )
+
+    create_new_user(user_schema)
+    return Response(body=None, status_code=201)
 
 
-@app.route(
-    "/user",
-    methods=["GET", "PATCH", "DELETE"],
-    authorizer=internal_authorizer,
-    cors=True,
-)
+@app.route("/user", methods=["GET"], authorizer=internal_authorizer, cors=True)
 def handle_get_user():
     user = fetch_user(get_user_email())
+    return {
+        "email": user.email,
+        "zipcode": user.zipcode,
+        "distance": user.distance,
+    }
 
-    if app.current_request.method == "GET":
-        return {
-            "email": user.email,
-            "zipcode": user.zipcode,
-            "distance": user.distance,
-        }
 
-    elif app.current_request.method == "PATCH":
+@app.route("/user", methods=["PATCH"], authorizer=internal_authorizer, cors=True)
+def handle_update_user():
+    try:
         user_schema = UserSchema(**app.current_request.json_body)
-        update_user(user_schema, user)
-        return Response(body=None, status_code=204)
+    except ValidationError as e:
+        return Response(
+            body=e.errors(),
+            status_code=BadRequestError.STATUS_CODE,
+        )
 
-    elif app.current_request.method == "DELETE":
-        delete_user(user)
-        return Response(body=None, status_code=204)
+    user = fetch_user(get_user_email())
+    update_user(user_schema, user)
+    return Response(body=None, status_code=204)
+
+
+@app.route("/user", methods=["DELETE"], authorizer=internal_authorizer, cors=True)
+def handle_delete_user():
+    user = fetch_user(get_user_email())
+    delete_user(user)
+    return Response(body=None, status_code=204)
 
 
 @app.schedule(

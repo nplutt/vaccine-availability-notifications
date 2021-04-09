@@ -12,6 +12,10 @@ class UserSchema(BaseModel):
         """
         Validates that the zipcode is valid
         """
+        if '-' in zipcode:
+            zipcode = zipcode.split('-')[0]
+        if ' ' in zipcode:
+            zipcode = zipcode.split(' ')[0]
         if not zipcodes.is_real(zipcode):
             raise ValueError("Invalid zipcode")
         return zipcode

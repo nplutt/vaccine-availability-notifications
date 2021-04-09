@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Jumbotron, Spinner} from 'react-bootstrap'
+import {Jumbotron} from 'react-bootstrap'
 import UserPreferencesForm from "../components/UserPreferencesForm";
 import api from '../lib/api'
 
@@ -7,23 +7,25 @@ class SignUp extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            userCreated: false
+            userCreated: false,
+            loading: false,
+            error: false,
         };
     }
 
     onFormSubmit = async data => {
-        try {
-            const result = await api.user.post(data);
-            if (result.status === 201) {
-                this.setState({ userCreated: true })
-            }
-        } catch (err) {
-            console.log('Failed to signup')
+        this.setState({ loading: true });
+        const result = await api.user.post(data);
+        this.setState({ loading: false });
+        if (result.status === 201) {
+            this.setState({ userCreated: true })
+        } else {
+            this.setState({ error: true });
         }
     }
 
     render() {
-        const { userCreated } = this.state;
+        const { userCreated, loading } = this.state;
 
         return (
             <div style={{ marginBottom: 100 }}>
@@ -45,10 +47,11 @@ class SignUp extends Component {
                     }}>
                         <p>Thanks for the info! You will now receive email notifications when locations near you have new vaccination appointments available.</p>
                     </div>
-                ): (
+                ) : (
                     <UserPreferencesForm
                         formSubmitText="Sign Up"
                         onFormSubmit={this.onFormSubmit}
+                        loading={loading}
                     />
                 )}
             </div>

@@ -8,7 +8,7 @@ class Preferences extends Component {
         super(props);
         this.state = {
             user: null,
-            loaded: false,
+            loading: true,
             error: false,
             unsubscribed: false,
         };
@@ -24,11 +24,11 @@ class Preferences extends Component {
             if (result.status === 200) {
                 this.setState({
                     user: {...result.data },
-                    loaded: true,
+                    loading: false,
                 })
             }
         } catch (err) {
-           this.setState({ loaded: true, error: true })
+           this.setState({ loading: false, error: true })
         }
     }
 
@@ -44,8 +44,8 @@ class Preferences extends Component {
     }
 
     buildBody = () => {
-        const { user, loaded, error, unsubscribed } = this.state;
-        if (!loaded) {
+        const { user, loading, error, unsubscribed } = this.state;
+        if (loading) {
             return (
                 <div style={{
                     marginRight: 'auto',
@@ -57,7 +57,7 @@ class Preferences extends Component {
                     <p>Loading your notification preferences...</p>
                 </div>
             );
-        } else if (loaded && error) {
+        } else if (!loading && error) {
             return (
                 <div style={{
                     marginRight: 'auto',
@@ -88,11 +88,13 @@ class Preferences extends Component {
                         currentEmail={user.email}
                         currentDistance={user.distance}
                         currentZipcode={user.zipcode}
+                        loading={loading}
                     />
                     <div style={{
                         maxWidth: 300,
                         margin: 'auto',
                         paddingTop: 40,
+                        paddingBottom: 40,
                     }}>
                         <Button
                             variant="danger"

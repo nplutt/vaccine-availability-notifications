@@ -1,9 +1,9 @@
 import asyncio
 import time
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
 from uuid import uuid4
 
-from pendulum import Date, DateTime, Duration, Time, parse
+from pendulum import DateTime, parse
 
 
 def ms_since_epoch(
