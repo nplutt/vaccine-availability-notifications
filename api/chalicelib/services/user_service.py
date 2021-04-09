@@ -14,15 +14,16 @@ from chalicelib.repositories.user_repository import (
     load_user_by_email,
     load_users_by_parent_geohash_distance,
 )
-from chalicelib.services.email_service import logger
+from chalicelib.services.email_service import (
+    EmailTemplate,
+    send_emails_to_users,
+)
 from chalicelib.services.geo_service import (
     find_geohashes_in_radius,
     find_zipcodes_in_radius,
     get_zipcode_parent_geohash,
 )
 from chalicelib.utils import get_or_create_eventloop
-from chalicelib.enums.EmailTemplate import EmailTemplate
-from chalicelib.services.email_service import send_emails_to_users
 
 
 logger = get_logger(__name__)

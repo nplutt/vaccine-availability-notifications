@@ -22,6 +22,7 @@ from chalicelib.services.availability_service import (
     update_availability_for_all_states,
 )
 from chalicelib.services.email_service import (
+    EmailTemplate,
     send_emails_to_users,
 )
 from chalicelib.services.user_service import (
@@ -32,7 +33,6 @@ from chalicelib.services.user_service import (
     update_user,
 )
 from chalicelib.utils import get_or_create_eventloop
-from chalicelib.enums.EmailTemplate import EmailTemplate
 
 
 app = Chalice(app_name="vaccine")
@@ -139,4 +139,4 @@ def handle_process_location_availability(event):
         locations = json.loads(record.body)
         loop = get_or_create_eventloop()
         users = loop.run_until_complete(find_users_to_notify_for_locations(locations))
-        send_emails_to_users(users, EmailTemplate.NewAppointments)
+        send_emails_to_users([users], EmailTemplate.NewAppointments)
