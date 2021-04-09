@@ -21,17 +21,13 @@ def create_user(
     user = UserModel(
         email=email,
         parent_geohash=parent_geohash,
-        distance_zipcode=UserModel.build_distance_zipcode(
-            distance=distance,
-            zipcode=zipcode,
-            updated_at=updated_at,
-        ),
         distance=distance,
         zipcode=zipcode,
         state_abbr=state_abbr,
         timezone=timezone,
         updated_at=updated_at,
     )
+    user.update_keys()
     user.save()
     return user
 

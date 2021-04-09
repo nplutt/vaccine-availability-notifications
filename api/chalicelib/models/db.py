@@ -4,7 +4,7 @@ from pynamodb.attributes import NumberAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
-from chalicelib.utils import str_uuid
+from chalicelib.utils import ms_since_epoch, str_uuid
 
 
 class LocationIndex(GlobalSecondaryIndex):
@@ -37,6 +37,6 @@ class UserModel(Model):
 
     location_index = LocationIndex()
 
-    @staticmethod
-    def build_distance_zipcode(distance: int, zipcode: str, updated_at: int) -> str:
-        return f"{distance}+{zipcode}+{updated_at}+{str_uuid().split('-')[4]}"
+    def update_keys(self) -> None:
+        self.updated_at = ms_since_epoch()
+        self.distance_zipcode = f"{self.distance}+{self.zipcode}+{self.updated_at}+{str_uuid().split('-')[4]}"

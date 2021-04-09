@@ -20,7 +20,9 @@ from chalicelib.services.geo_service import (
     find_zipcodes_in_radius,
     get_zipcode_parent_geohash,
 )
-from chalicelib.utils import get_or_create_eventloop, ms_since_epoch
+from chalicelib.utils import get_or_create_eventloop
+from chalicelib.enums.EmailTemplate import EmailTemplate
+from chalicelib.services.email_service import send_emails_to_users
 
 
 logger = get_logger(__name__)
@@ -32,7 +34,7 @@ def create_new_user(body: UserSchema) -> UserModel:
         raise ConflictError
 
     zipcode_info = zipcodes.matching(body.zipcode)[0]
-    return create_user(
+    user = create_user(
         parent_geohash=get_zipcode_parent_geohash(body.zipcode, body.distance),
         distance=body.distance,
         zipcode=body.zipcode,
@@ -40,6 +42,11 @@ def create_new_user(body: UserSchema) -> UserModel:
         state_abbr=zipcode_info["state"],
         timezone=zipcode_info["timezone"],
     )
+
+    user_dto = UserEmailDTO.from_user(user)
+    send_emails_to_users([user_dto], EmailTemplate.WELCOME)
+
+    return user
 
 
 def fetch_user(email: str) -> UserModel:
@@ -53,7 +60,8 @@ def fetch_user(email: str) -> UserModel:
 def update_user(body: UserSchema, user: UserModel) -> UserModel:
     user.zipcode = body.zipcode
     user.distance = body.distance
-    user.updated_at = ms_since_epoch()
+    user.parent_geohash = get_zipcode_parent_geohash(body.zipcode, body.distance)
+    user.update_keys()
     user.save()
     return user
 

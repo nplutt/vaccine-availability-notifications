@@ -1,6 +1,5 @@
 import json
 import os
-from time import sleep
 from typing import List
 
 import boto3
@@ -10,6 +9,7 @@ from chalicelib.logs.utils import get_logger
 from chalicelib.models.dto import UserEmailDTO
 from chalicelib.services.template_service import render_template
 from chalicelib.utils import chunk_list
+from chalicelib.enums.EmailTemplate import EmailTemplate
 
 
 logger = get_logger(__name__)
@@ -18,7 +18,7 @@ ses_client = boto3.client("ses")
 
 
 @func_time
-def send_new_appointment_emails_to_users(users: List[UserEmailDTO]) -> None:
+def send_emails_to_users(users: List[UserEmailDTO], template: EmailTemplate) -> None:
     if os.environ.get("SEND_EMAILS") != "TRUE":
         return None
 
@@ -36,11 +36,11 @@ def send_new_appointment_emails_to_users(users: List[UserEmailDTO]) -> None:
                         {
                             "subject": "New vaccine appointments near you!",
                             "html": render_template(
-                                "./chalicelib/templates/new_appointments.html",
+                                f"./chalicelib/templates/{template.value}.html",
                                 u.email_context(),
                             ),
                             "text": render_template(
-                                "./chalicelib/templates/new_appointments.txt",
+                                f"./chalicelib/templates/{template.value}.txt",
                                 u.email_context(),
                             ),
                         },

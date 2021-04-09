@@ -54,6 +54,31 @@ class SignUp extends Component {
                         loading={loading}
                     />
                 )}
+                <Jumbotron style={{
+                    marginRight: 'auto',
+                    marginLeft: 'auto',
+                    maxWidth: 1000,
+                    backgroundColor: 'white',
+                    textAlign: 'left',
+                }}>
+                    <h2>About</h2>
+                    <div>
+                        Finding a vaccination appointment can be very frustrating and time
+                        consuming, hopefully this tool can help make that easier! Feel free to
+                        email any questions to <a href="mailto:nplutt.vaccine@gmail.com">nplutt.vaccine@gmail.com</a> and
+                        report issues to <a href="https://github.com/nplutt/vaccine-availability-notifications/issues">Github</a>.
+                    </div>
+                    <br/>
+                    <div>
+                        This website is inspired by and made possible thanks to <a href="https://vaccinespotter.org">Vaccine Spotter</a> and the data that they provide via their API!
+                        Head over to their site for the most up to date vaccine appointment availability.
+                    </div>
+                    <br/>
+                    <div>
+                        If you're an engineer and would like to help out, the project is open sourced
+                        on <a href="https://github.com/nplutt/vaccine-availability-notifications">Github</a>.
+                    </div>
+                </Jumbotron>
             </div>
         );
     }
