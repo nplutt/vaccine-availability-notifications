@@ -14,7 +14,7 @@ sqs_client = boto3.client("sqs")
 
 
 def send_location_availability_to_queue(locations: List[dict]) -> None:
-    for chunk in chunk_list(locations, 10):
+    for chunk in chunk_list(locations, 25):
         try:
             sqs_client.send_message(
                 QueueUrl=os.environ["LOCATION_AVAILABILITY_QUEUE_URL"],
@@ -25,6 +25,5 @@ def send_location_availability_to_queue(locations: List[dict]) -> None:
                 "Failed to send locations to availability queue",
                 extra={
                     "error": e,
-                    "chunk": chunk,
                 },
             )

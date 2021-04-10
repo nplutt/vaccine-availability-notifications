@@ -24,6 +24,8 @@ class SignUp extends Component {
         }
     }
 
+
+
     render() {
         const { userCreated, loading } = this.state;
 
@@ -46,6 +48,7 @@ class SignUp extends Component {
                         textAlign: 'center',
                     }}>
                         <p>Thanks for the info! You will now receive email notifications when locations near you have new vaccination appointments available.</p>
+                        <p>If you don't recieve a welcome email, please check your <b>junk or spam</b> folders.</p>
                     </div>
                 ) : (
                     <UserPreferencesForm
@@ -60,6 +63,7 @@ class SignUp extends Component {
                     maxWidth: 1000,
                     backgroundColor: 'white',
                     textAlign: 'left',
+                    paddingBottom: 0,
                 }}>
                     <h2>About</h2>
                     <div>
@@ -78,6 +82,30 @@ class SignUp extends Component {
                         If you're an engineer and would like to help out, the project is open sourced
                         on <a href="https://github.com/nplutt/vaccine-availability-notifications">Github</a>.
                     </div>
+                </Jumbotron>
+                <Jumbotron style={{
+                    marginRight: 'auto',
+                    marginLeft: 'auto',
+                    maxWidth: 1000,
+                    backgroundColor: 'white',
+                    textAlign: 'left',
+                    paddingTop: 0,
+                }}>
+                    <h2>Common Questions</h2>
+                    <p>
+                        <div><b>Q:</b> Not receiving emails?</div>
+                        <div>
+                            <b>A:</b> Check your spam folder, if there aren't any emails in there then try widening your search radius.
+                        </div>
+                    </p>
+                    <p>
+                        <div><b>Q:</b> Why aren't the appointments that I see in the email available?</div>
+                        <div>
+                            <b>A:</b> There is a 2 to 5 minute delay between when appointments become available and when we can
+                            get the emails sent to you. For the most up to date vaccine availability information, go
+                            to <a href="https://vaccinespotter.org">Vaccine Spotter</a>.
+                        </div>
+                    </p>
                 </Jumbotron>
             </div>
         );

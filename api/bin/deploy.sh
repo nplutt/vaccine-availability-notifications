@@ -11,5 +11,8 @@ trap cleanup EXIT
 
 cd "$(dirname "$0")/.."
 
+bash bin/format_code.sh
+bash bin/lint_code.sh
+
 python ./.chalice/config.py
 chalice deploy --stage prod

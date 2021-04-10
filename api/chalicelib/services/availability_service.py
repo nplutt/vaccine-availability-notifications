@@ -99,7 +99,9 @@ def compare_availability(new_availability: dict, old_availability: dict) -> None
         new_appointment_count = _get_location_appointment_count(location_availability)
 
         if old_appointment_count == 0 and new_appointment_count > 0:
-            logger.info("Wahoo there are new appointments available!!!")
+            # New appointments available but lets pop off the appointments info
+            # to save room in SQS
+            location_availability["properties"].pop("appointments")
             locations.append(location_availability)
 
     logger.info("Locations with new appointments", extra={"count": len(locations)})

@@ -1,5 +1,6 @@
 import json
 import os
+from typing import List
 
 from chalice import (
     AuthResponse,
@@ -15,6 +16,7 @@ from chalicelib import singletons
 from chalicelib.logs.decorators import set_request_id
 from chalicelib.logs.utils import get_logger
 from chalicelib.models.api import UserSchema
+from chalicelib.models.dto import UserEmailDTO
 from chalicelib.services.auth_service import access_token_valid, get_user_email
 from chalicelib.services.availability_service import (
     compare_availability,
@@ -36,6 +38,7 @@ from chalicelib.utils import get_or_create_eventloop
 
 
 app = Chalice(app_name="vaccine")
+app.debug = True
 app.register_middleware(ConvertToMiddleware(set_request_id), "all")
 singletons.app = app
 
@@ -138,5 +141,7 @@ def handle_process_location_availability(event):
     for record in event:
         locations = json.loads(record.body)
         loop = get_or_create_eventloop()
-        users = loop.run_until_complete(find_users_to_notify_for_locations(locations))
-        send_emails_to_users([users], EmailTemplate.NewAppointments)
+        users: List[UserEmailDTO] = loop.run_until_complete(
+            find_users_to_notify_for_locations(locations),
+        )
+        send_emails_to_users(users, EmailTemplate.NewAppointments)
