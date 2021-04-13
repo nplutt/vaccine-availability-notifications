@@ -12,7 +12,7 @@ const UserPreferencesForm  = ({
     const [validated, setValidated] = React.useState(false);
     const [email, setEmail] = React.useState(currentEmail || '')
     const [zipcode, setZipcode] = React.useState(currentZipcode || '')
-    const [distance, setDistance] = React.useState(currentDistance || 5)
+    const [distance, setDistance] = React.useState(currentDistance || 10)
     const [errors, setErrors] = React.useState({});
 
     const handleSubmit = event => {

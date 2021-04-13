@@ -1,8 +1,6 @@
-from datetime import datetime
 from typing import List, Optional
 
 import attr
-import pendulum
 from pendulum.datetime import DateTime
 
 from chalicelib.models.db import UserModel
@@ -44,6 +42,7 @@ class UserEmailDTO(object):
     email: str
     zipcode: str
     distance: str
+    vaccine_spotter_distance: str
     state_abbr: str
     timezone: str
     locations: List[LocationDTO]
@@ -54,6 +53,7 @@ class UserEmailDTO(object):
             email=user.email,
             zipcode=user.zipcode,
             distance=str(user.distance),
+            vaccine_spotter_distance=str(user.distance + 5),
             state_abbr=user.state_abbr,
             timezone=user.timezone,
             locations=[],
@@ -80,6 +80,7 @@ class UserEmailDTO(object):
             "user": {
                 "zipcode": self.zipcode,
                 "distance": self.distance,
+                "vaccine_spotter_distance": self.vaccine_spotter_distance,
                 "state_abbr": self.state_abbr,
                 "token": generate_access_token(self.email),
             },
