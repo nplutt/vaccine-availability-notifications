@@ -16,15 +16,18 @@ If you're interested in working on any of these features or pieces of work open 
 - Add architecture diagram to documentation
 - Add Q&A to the website
     * What happens with data
+    
+## Local Development
+
 
 ## Engineering Notes
+* User data is stored in DynamoDB
 * Vaccine Spotter API is crawled once every 3 minutes
 * Data processing pipeline does a diff on the data and the sends out emails based on users notification
 preferences
 
 ### Architecture Diagram
-![Screenshot](./docs/assets/architecture_diagram.png)
-
+![Alt text](./docs/assets/architecture_diagram.png)
 
 ### DynamoDB
 Main:
@@ -33,7 +36,6 @@ Main:
 GSI:
 * Partition Key: `parent_geohash` (a level 3 geohash of the zipcode)
 * Range Key: `distance+zipcode` (user's distance preference combined with the zipcode they're located in)
-
 
 ### Notifications
 * Emails sent using AWS SES

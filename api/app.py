@@ -2,6 +2,7 @@ import json
 import os
 from typing import List
 
+import us
 from chalice import (
     AuthResponse,
     BadRequestError,
@@ -21,7 +22,7 @@ from chalicelib.services.auth_service import access_token_valid, get_user_email
 from chalicelib.services.availability_service import (
     compare_availability,
     fetch_state_availability_from_s3,
-    update_availability_for_all_states,
+    update_availability_for_states,
 )
 from chalicelib.services.email_service import (
     EmailTemplate,
@@ -38,7 +39,7 @@ from chalicelib.services.user_service import (
     find_users_to_notify_for_locations,
     update_user,
 )
-from chalicelib.utils import get_or_create_eventloop
+from chalicelib.utils import chunk_list, get_or_create_eventloop
 
 
 app = Chalice(app_name="vaccine")
@@ -122,7 +123,9 @@ def handle_delete_user():
     name="update-availability",
 )
 def handle_update_availability(event):
-    update_availability_for_all_states()
+    for states in chunk_list(us.states.STATES, 10):
+        loop = get_or_create_eventloop()
+        loop.run_until_complete(update_availability_for_states(states))
 
 
 @app.on_s3_event(

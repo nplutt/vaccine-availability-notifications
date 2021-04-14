@@ -1,15 +1,16 @@
+import asyncio
 import json
 import os
-from typing import Tuple
+from typing import Any, List, Tuple
 
 import boto3
-import us
 
 from chalicelib.logs.utils import get_logger
 from chalicelib.services.sqs_service import send_location_availability_to_queue
 from chalicelib.services.vaccinespotter_service import (
     fetch_availability_for_state,
 )
+from chalicelib.utils import get_or_create_eventloop
 
 
 logger = get_logger(__name__)
@@ -17,14 +18,27 @@ logger = get_logger(__name__)
 s3_client = boto3.client("s3")
 
 
-def update_availability_for_all_states() -> None:
-    logger.info("Updating availability for all US states")
-    for state in us.states.STATES:
-        availability = fetch_availability_for_state(state.abbr)
+async def update_availability_for_states(states: List[Any]) -> None:
+    logger.info(
+        "Updating availability for states",
+        extra={
+            "count": len(states),
+        },
+    )
+    loop = get_or_create_eventloop()
+    futures = [
+        loop.run_in_executor(None, update_availability_for_state, state.abbr)
+        for state in states
+    ]
+    await asyncio.gather(*futures)
 
-        if availability is not None:
-            availability = format_availability(state.abbr, availability)
-            update_state_availability_in_s3(state.abbr, availability)
+
+def update_availability_for_state(state_abbr: str) -> None:
+    availability = fetch_availability_for_state(state_abbr)
+
+    if availability is not None:
+        availability = format_availability(state_abbr, availability)
+        update_state_availability_in_s3(state_abbr, availability)
 
 
 def format_availability(state_abbr: str, availability: dict) -> dict:
