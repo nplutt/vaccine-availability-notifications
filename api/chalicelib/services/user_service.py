@@ -23,6 +23,10 @@ from chalicelib.services.geo_service import (
     find_zipcodes_in_radius,
     get_zipcode_parent_geohash,
 )
+from chalicelib.services.metrics_service import (
+    send_user_created_metric,
+    send_user_deleted_metric,
+)
 from chalicelib.utils import get_or_create_eventloop
 
 
@@ -46,6 +50,7 @@ def create_new_user(body: UserSchema) -> UserModel:
 
     user_dto = UserEmailDTO.from_user(user)
     send_emails_to_users([user_dto], EmailTemplate.WELCOME)
+    send_user_created_metric()
 
     return user
 
@@ -69,6 +74,7 @@ def update_user(body: UserSchema, user: UserModel) -> UserModel:
 
 def delete_user(user: UserModel) -> UserModel:
     user.delete()
+    send_user_deleted_metric()
     return user
 
 

@@ -28,10 +28,6 @@ from chalicelib.services.email_service import (
     EmailTemplate,
     send_emails_to_users,
 )
-from chalicelib.services.metrics_service import (
-    send_user_created_metric,
-    send_user_deleted_metric,
-)
 from chalicelib.services.user_service import (
     create_new_user,
     delete_user,
@@ -81,7 +77,6 @@ def handle_create_user():
         )
 
     create_new_user(user_schema)
-    send_user_created_metric()
     return Response(body=None, status_code=201)
 
 
@@ -114,7 +109,6 @@ def handle_update_user():
 def handle_delete_user():
     user = fetch_user(get_user_email())
     delete_user(user)
-    send_user_deleted_metric()
     return Response(body=None, status_code=204)
 
 
