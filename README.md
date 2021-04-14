@@ -23,7 +23,7 @@ If you're interested in working on any of these features or pieces of work open 
 preferences
 
 ### Architecture Diagram
-[!Alt text](./docs/assets/architecture_diagram.png)
+![Screenshot](./docs/assets/architecture_diagram.png)
 
 
 ### DynamoDB
