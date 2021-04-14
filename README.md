@@ -5,6 +5,7 @@ at [covid-vaccine-notifications.org](https://covid-vaccine-notifications.org)!
 
 ## Accepting Help 
 If you're interested in working on any of these features or pieces of work open up an issue and tag me in it!
+- Add navigation header to the website so that users can navigate from the home page to the preferences page and vice versa
 - Ability to send an email to manage your preferences from the website
 - SES -> SNS -> Lambda to delete users after emails bounce more than 2x
 - Migrate Terraform code into this repo 
@@ -20,6 +21,10 @@ If you're interested in working on any of these features or pieces of work open 
 * Vaccine Spotter API is crawled once every 3 minutes
 * Data processing pipeline does a diff on the data and the sends out emails based on users notification
 preferences
+
+### Architecture Diagram
+[!Alt text](./docs/assets/architecture_diagram.png)
+
 
 ### DynamoDB
 Main:
