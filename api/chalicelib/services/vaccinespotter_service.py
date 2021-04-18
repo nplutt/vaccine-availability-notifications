@@ -1,7 +1,7 @@
 from typing import Optional
 
 import requests
-from requests import HTTPError
+from requests import HTTPError, Timeout
 
 from chalicelib.logs.utils import get_logger
 
@@ -20,8 +20,9 @@ def fetch_availability_for_state(state_abbr: str) -> Optional[dict]:
     try:
         response = requests.get(
             f"https://www.vaccinespotter.org/api/v0/states/{state_abbr}.json",
+            timeout=10,
         )
-    except HTTPError as e:
+    except (HTTPError, Timeout) as e:
         logger.error(
             "Failed to process state availability",
             extra={"exception": e, "state": state_abbr},
