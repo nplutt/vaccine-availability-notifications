@@ -1,6 +1,7 @@
-import React, {Component} from 'react';
-import {Jumbotron, Spinner, Button} from 'react-bootstrap'
+import React, { Component } from 'react';
+import { Jumbotron, Spinner, Button } from 'react-bootstrap'
 import UserPreferencesForm from "../components/UserPreferencesForm";
+import SendPreferencesEmailForm from "../components/SendPreferencesEmailForm"
 import api from '../lib/api'
 
 class Preferences extends Component {
@@ -11,6 +12,8 @@ class Preferences extends Component {
             loading: true,
             error: false,
             unsubscribed: false,
+            showSuccessAlert: false,
+            showErrorAlert: false
         };
     }
 
@@ -18,17 +21,20 @@ class Preferences extends Component {
         let params = (new URL(window.location.href)).searchParams;
         let token = params.get('token');
         this.setState({ token })
-
-        try {
-            const result = await api.user.get(token);
-            if (result.status === 200) {
-                this.setState({
-                    user: {...result.data },
-                    loading: false,
-                })
+        if (token) {
+            try {
+                const result = await api.user.get(token);
+                if (result.status === 200) {
+                    this.setState({
+                        user: { ...result.data },
+                        loading: false,
+                    })
+                }
+            } catch (err) {
+                this.setState({ loading: false, error: true })
             }
-        } catch (err) {
-           this.setState({ loading: false, error: true })
+        } else {
+            this.setState({ loading: false })
         }
     }
 
@@ -37,14 +43,23 @@ class Preferences extends Component {
         await api.user.patch(token, data);
     }
 
+    sendPreferencesEmail = async data => {
+        const send_email_result = await api.user.manage_preferences.post(data);
+        if (send_email_result.status == 204) {
+            this.setState({ showSuccessAlert: true })
+        } else {
+            this.setState({ showErrorAlert: true })
+        }
+    }
+
     unsubscribe = async () => {
         const { token } = this.state;
         await api.user.delete(token);
-        this.setState({unsubscribed: true})
+        this.setState({ unsubscribed: true })
     }
 
     buildBody = () => {
-        const { user, loading, error, unsubscribed } = this.state;
+        const { user, loading, error, unsubscribed, token, showSuccessAlert, showErrorAlert } = this.state;
         if (loading) {
             return (
                 <div style={{
@@ -68,6 +83,20 @@ class Preferences extends Component {
                     <p>Looks like we were unable to load your notification preferences</p>
                 </div>
             );
+        } else if (!loading && !token) {
+            return (
+                <div style={{
+
+                }}>
+                    <SendPreferencesEmailForm
+                        formSubmitText="SendPreferencesEmail"
+                        onFormSubmit={this.sendPreferencesEmail}
+                        loading={loading}
+                        showSuccessAlert={showSuccessAlert}
+                        showErrorAlert={showErrorAlert}
+                    ></SendPreferencesEmailForm>
+                </div>
+            )
         } else if (unsubscribed) {
             return (
                 <div style={{
