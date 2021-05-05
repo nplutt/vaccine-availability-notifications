@@ -1,0 +1,3 @@
+Hello, press the button below to manage your notification preferences.
+
+To unsubscribe go to https://covid-vaccine-notifications/preferences?token={{ user.token }}
