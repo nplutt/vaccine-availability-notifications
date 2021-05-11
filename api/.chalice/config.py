@@ -21,7 +21,7 @@ def main():
         "app_name": "vaccine",
         "autogen_policy": False,
         "environment_variables": {
-            "AVAILABILITY_UPDATE_INTERVAL": "3",
+            "AVAILABILITY_UPDATE_INTERVAL": "60",
             "REGION": "us-west-2",
             "LOG_LEVEL": "INFO",
             "DYNAMO_DB_TABLE_NAME": "user-vaccine-notifications-prod",
@@ -47,6 +47,10 @@ def main():
                     },
                     "process-location-availability": {
                         "lambda_timeout": 180,
+                        "lambda_memory_size": 1024,
+                    },
+                    "update-availability": {
+                        "lambda_timeout": 60,
                         "lambda_memory_size": 1024,
                     },
                 },

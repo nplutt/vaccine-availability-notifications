@@ -40,7 +40,7 @@ def access_token_valid(token: str) -> Tuple[bool, Optional[str]]:
     except PyJWTError:
         return False, None
 
-    return payload["exp"] < ms_since_epoch(), payload["email"]
+    return payload["exp"] > ms_since_epoch(), payload["email"]
 
 
 def get_user_email() -> Optional[str]:

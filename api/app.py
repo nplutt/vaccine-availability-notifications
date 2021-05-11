@@ -58,7 +58,11 @@ def internal_authorizer(auth_request):
         return invalid_response
 
     valid_token, _ = access_token_valid(bearer_token)
-    return valid_response if valid_token else invalid_response
+    if valid_token:
+        return valid_response
+    else:
+        logger.error("Invalid token")
+        return invalid_response
 
 
 @app.route("/xping")
@@ -71,6 +75,7 @@ def handle_create_user():
     try:
         user_schema = UserSchema(**app.current_request.json_body)
     except ValidationError as e:
+        logger.warning("Invalid JSON body, failed to validate schema")
         return Response(
             body=e.errors(),
             status_code=BadRequestError.STATUS_CODE,
@@ -95,6 +100,7 @@ def handle_update_user():
     try:
         user_schema = UserSchema(**app.current_request.json_body)
     except ValidationError as e:
+        logger.warning("Invalid JSON body, failed to validate schema")
         return Response(
             body=e.errors(),
             status_code=BadRequestError.STATUS_CODE,
@@ -117,9 +123,12 @@ def handle_delete_user():
     name="update-availability",
 )
 def handle_update_availability(event):
-    for states in chunk_list(us.states.STATES, 10):
-        loop = get_or_create_eventloop()
-        loop.run_until_complete(update_availability_for_states(states))
+    try:
+        for states in chunk_list(us.states.STATES, 10):
+            loop = get_or_create_eventloop()
+            loop.run_until_complete(update_availability_for_states(states))
+    except Exception as e:
+        logger.error("Failed to update availability", extra={"exception": e})
 
 
 @app.on_s3_event(

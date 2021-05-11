@@ -19,7 +19,7 @@ def ms_since_epoch(
     if days:
         future_ms += days * 24 * 60 * 60000
 
-    return int(time.time() * 1000)
+    return int(time.time() * 1000) + future_ms
 
 
 def str_uuid() -> str:
