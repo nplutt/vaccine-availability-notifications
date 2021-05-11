@@ -27,7 +27,7 @@ from chalicelib.services.metrics_service import (
     send_user_created_metric,
     send_user_deleted_metric,
 )
-from chalicelib.utils import get_or_create_eventloop
+from chalicelib.utils import get_or_create_eventloop, ms_since_epoch
 
 
 logger = get_logger(__name__)
@@ -88,6 +88,7 @@ def find_users_to_notify_for_location(location: dict) -> Optional[List[dict]]:
 
     users = []
     zipcode_distances = find_zipcodes_in_radius(coordinates[0], coordinates[1], 50)
+    updated_since_limit = ms_since_epoch() - 1814400000 # 21 days in milliseconds
 
     for distance, zipcodes in zipcode_distances.items():
         parent_geohashes = find_geohashes_in_radius(
@@ -100,7 +101,9 @@ def find_users_to_notify_for_location(location: dict) -> Optional[List[dict]]:
         for geohash in parent_geohashes:
             unfiltered_users = load_users_by_parent_geohash_distance(geohash, distance)
             filtered_users = list(
-                filter(lambda u: u.zipcode in zipcode_set, unfiltered_users),
+                filter(
+                    lambda u: u.zipcode in zipcode_set and u.updated_at > updated_since_limit,
+                    unfiltered_users),
             )
             users += [
                 {
