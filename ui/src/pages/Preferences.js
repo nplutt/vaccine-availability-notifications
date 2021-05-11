@@ -45,7 +45,7 @@ class Preferences extends Component {
 
     sendPreferencesEmail = async data => {
         const send_email_result = await api.user.manage_preferences.post(data);
-        if (send_email_result.status == 204) {
+        if (send_email_result.status === 204) {
             this.setState({ showSuccessAlert: true })
         } else {
             this.setState({ showErrorAlert: true })
@@ -85,11 +85,9 @@ class Preferences extends Component {
             );
         } else if (!loading && !token) {
             return (
-                <div style={{
-
-                }}>
+                <div>
                     <SendPreferencesEmailForm
-                        formSubmitText="SendPreferencesEmail"
+                        formSubmitText="Send"
                         onFormSubmit={this.sendPreferencesEmail}
                         loading={loading}
                         showSuccessAlert={showSuccessAlert}

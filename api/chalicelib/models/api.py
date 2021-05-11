@@ -25,3 +25,7 @@ class UserSchema(BaseModel):
         if distance not in (5, 10, 25, 50):
             raise ValueError("Invalid distance")
         return distance
+
+
+class ManagePreferences(BaseModel):
+    email: EmailStr

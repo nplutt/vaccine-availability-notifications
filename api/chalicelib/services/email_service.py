@@ -29,10 +29,10 @@ class EmailTemplate(Enum):
         subject="New vaccine appointments near you!",
         template_name="new_appointments",
     )
-    WELCOME = Email(subject="Welcome!", template_name="welcome")
+    Welcome = Email(subject="Welcome!", template_name="welcome")
     UpdatePreferences = Email(
         subject="Update your email preferences",
-        template_name="update_preferences"
+        template_name="update_preferences",
     )
 
     @property

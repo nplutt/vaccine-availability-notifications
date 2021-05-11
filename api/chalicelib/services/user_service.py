@@ -49,7 +49,7 @@ def create_new_user(body: UserSchema) -> UserModel:
     )
 
     user_dto = UserEmailDTO.from_user(user)
-    send_emails_to_users([user_dto], EmailTemplate.WELCOME)
+    send_emails_to_users([user_dto], EmailTemplate.Welcome)
     send_user_created_metric()
 
     return user

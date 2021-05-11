@@ -17,7 +17,7 @@ from pydantic import ValidationError
 from chalicelib import singletons
 from chalicelib.logs.decorators import set_request_id
 from chalicelib.logs.utils import get_logger
-from chalicelib.models.api import UserSchema
+from chalicelib.models.api import ManagePreferences, UserSchema
 from chalicelib.models.dto import UserEmailDTO
 from chalicelib.services.auth_service import access_token_valid, get_user_email
 from chalicelib.services.availability_service import (
@@ -119,31 +119,31 @@ def handle_delete_user():
     return Response(body=None, status_code=204)
 
 
-@app.route("/user/manage_preferences", methods=["POST"])
+@app.route("/user/manage_preferences", methods=["POST"], cors=True)
 def manage_preferences():
-    """Checks for user from email property in request body
+    """
+    Checks for user from email property in request body
     and sends an email to containing a link to update notification
     preferences with a temp auth token included
 
     Returns:
         [Response]: A formatted response to the API caller
     """
-    user_email = app.current_request.json_body.get('email')
-    if user_email:
-        try:
-            user = fetch_user(user_email)
-            send_emails_to_users([user])
-            return Response(body={'message': 'success'}, status_code=204)
-        except NotFoundError:
-            return Response(
-                body=f'User not found for email address: {user_email}',
-                status_code=NotFoundError.STATUS_CODE
-            )
+    try:
+        preferences_schema = ManagePreferences(**app.current_request.json_body)
+    except ValidationError as e:
+        logger.warning("Invalid JSON body, failed to validate schema")
+        return Response(
+            body=e.errors(),
+            status_code=BadRequestError.STATUS_CODE,
+        )
 
-    return Response(
-        body='Missing email property from JSON body',
-        status_code=BadRequestError.STATUS_CODE,
+    user = fetch_user(preferences_schema.email)
+    send_emails_to_users(
+        [UserEmailDTO.from_user(user)],
+        EmailTemplate.UpdatePreferences,
     )
+    return Response(body={"message": "success"}, status_code=204)
 
 
 @app.schedule(

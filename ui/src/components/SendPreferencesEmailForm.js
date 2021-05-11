@@ -42,7 +42,7 @@ const SendPreferencesEmailForm = ({
             <Card.Body>
                 <Form validated={validated} onSubmit={handleSubmit}>
                     <Form.Group controlId="formEmail">
-                        <Form.Label>Send update notification preferences email to</Form.Label>
+                        <Form.Label>Manage your notification preferences by sending an email to</Form.Label>
                         <Form.Control
                             type="email"
                             placeholder="Enter email"

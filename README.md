@@ -3,22 +3,11 @@ Tooling built off of [vaccinespotter](https://vaccinespotter.org) to send you no
 COVID-19 vaccine appointments become available in your area. If you'd like to use the tool, it is available 
 at [covid-vaccine-notifications.org](https://covid-vaccine-notifications.org)!
 
-## Accepting Help 
-If you're interested in working on any of these features or pieces of work open up an issue and tag me in it!
-- Add navigation header to the website so that users can navigate from the home page to the preferences page and vice versa
-- Ability to send an email to manage your preferences from the website
-- SES -> SNS -> Lambda to delete users after emails bounce more than 2x
-- Migrate Terraform code into this repo 
-- Add better error handling to the front end
-- Add unit & integration tests to the backend 
-- Add documentation to the backend
-- Cleanup styling in emails and frontend
-- Add architecture diagram to documentation
-- Add Q&A to the website
-    * What happens with data
-    
-## Local Development
-
+## Contributors
+Thank you to the following individuals for their contributions to this project!
+* [Joe Behrens](https://github.com/joseph-behrens)
+    - Navigation Bar
+    - User preferences email flow
 
 ## Engineering Notes
 * User data is stored in DynamoDB
