@@ -30,6 +30,10 @@ class EmailTemplate(Enum):
         template_name="new_appointments",
     )
     WELCOME = Email(subject="Welcome!", template_name="welcome")
+    UpdatePreferences = Email(
+        subject="Update your email preferences",
+        template_name="update_preferences"
+    )
 
     @property
     def subject(self) -> str:

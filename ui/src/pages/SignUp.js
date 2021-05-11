@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {Jumbotron} from 'react-bootstrap'
+import React, { Component } from 'react';
+import { Jumbotron } from 'react-bootstrap'
 import UserPreferencesForm from "../components/UserPreferencesForm";
 import api from '../lib/api'
 
@@ -72,12 +72,12 @@ class SignUp extends Component {
                         email any questions to <a href="mailto:nplutt.vaccine@gmail.com">nplutt.vaccine@gmail.com</a> and
                         report issues to <a href="https://github.com/nplutt/vaccine-availability-notifications/issues">Github</a>.
                     </div>
-                    <br/>
+                    <br />
                     <div>
                         This website is inspired by and made possible thanks to <a href="https://vaccinespotter.org">Vaccine Spotter</a> and the data that they provide via their API!
                         Head over to their site for the most up to date vaccine appointment availability.
                     </div>
-                    <br/>
+                    <br />
                     <div>
                         If you're an engineer and would like to help out, the project is open sourced
                         on <a href="https://github.com/nplutt/vaccine-availability-notifications">Github</a>.

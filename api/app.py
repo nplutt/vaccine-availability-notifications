@@ -9,6 +9,7 @@ from chalice import (
     Chalice,
     ConvertToMiddleware,
     Cron,
+    NotFoundError,
     Response,
 )
 from pydantic import ValidationError
@@ -116,6 +117,33 @@ def handle_delete_user():
     user = fetch_user(get_user_email())
     delete_user(user)
     return Response(body=None, status_code=204)
+
+
+@app.route("/user/manage_preferences", methods=["POST"])
+def manage_preferences():
+    """Checks for user from email property in request body
+    and sends an email to containing a link to update notification
+    preferences with a temp auth token included
+
+    Returns:
+        [Response]: A formatted response to the API caller
+    """
+    user_email = app.current_request.json_body.get('email')
+    if user_email:
+        try:
+            user = fetch_user(user_email)
+            send_emails_to_users([user])
+            return Response(body={'message': 'success'}, status_code=204)
+        except NotFoundError:
+            return Response(
+                body=f'User not found for email address: {user_email}',
+                status_code=NotFoundError.STATUS_CODE
+            )
+
+    return Response(
+        body='Missing email property from JSON body',
+        status_code=BadRequestError.STATUS_CODE,
+    )
 
 
 @app.schedule(
