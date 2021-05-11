@@ -88,7 +88,7 @@ def find_users_to_notify_for_location(location: dict) -> Optional[List[dict]]:
 
     users = []
     zipcode_distances = find_zipcodes_in_radius(coordinates[0], coordinates[1], 50)
-    updated_since_limit = ms_since_epoch() - 1814400000  # 21 days in milliseconds
+    updated_since_limit = ms_since_epoch(days=-21)  # 21 days in milliseconds
 
     for distance, zipcodes in zipcode_distances.items():
         parent_geohashes = find_geohashes_in_radius(
